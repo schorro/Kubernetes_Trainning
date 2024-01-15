@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "goserver"
+  labels:
+    app: "goserver"
+spec:
+  selector:
+    matchLabels:
+      app: goserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "goserver"
+    spec:
+      containers:
+        - name: gosystem
+          image: "schorro/hello-go:v8"
+
+          resources:
+            requests:
+              cpu: "0.3"
+              memory: 20Mi
+            limits:
+              cpu: "0.3"
+              memory: 25mi
+ 
+          startupProbe:
+             httpGet:
+               path: /healthz
+               port: 8000
+             periodSeconds: 3
+             failureThreshold: 30
+   
+          readinessProbe:
+             httpGet:
+               path: /healthz
+               port: 8000
+             periodSeconds: 3
+             failureThreshold: 1
+            #  initialDelaySeconds: 10
+             
+          livenessProbe:
+             httpGet:
+               path: /healthz
+               port: 8000
+             periodSeconds: 5
+             failureThreshold: 1
+             timeoutSeconds: 1
+             successThreshold: 1 
+            #  initialDelaySeconds: 10
+
+
+          envFrom:
+            - configMapRef: #This line add all the information inside of your "configmap-env.yaml" to your application without the necessity to insert all the lines to refere each variable as we have below in comments
+                name: goserver-env
+            - secretRef:
+                name: goserver-secret #This line add as environment variable the information relates to the secret and user from secret.yaml file. Those two information are in base64 in that file. We could improve the security of this working with Vault or another tool to transform the clear text in criptography
+
+          volumeMounts:
+            - mountPath: "/go/myfamily"
+              name: config
+
+      volumes:
+        - name: config
+          configMap:
+            name: configmap-family
+            items:
+            - key: members
+              path: "family.txt"
+
+
+
+
+          # env:
+          #     - name: NAME
+          #       valueFrom:
+          #             configMapKeyRef:
+          #                 name: goserver-env
+          #                 key: NAME
+                  
+          #     - name: AGE
+          #       valueFrom:
+          #             configMapKeyRef:
+          #                 name: goserver-env
+          #                 key: AGE

@@ -1,0 +1,7 @@
+kubectl apply -f {NameOfFile}
+kubectl port-forward service,deployment/ {PortFromLocalHost:PortToContainer}
+kubectl get service
+kubectl get pod
+kubectl describe deployment, pod {NameOfPod}
+kubectl get replicasets
+kubectl exec -it goserver-bc88c4564-j98hb -- bash
